@@ -1,7 +1,6 @@
 import math
 from display import *
 
-
   # IMPORANT NOTE
 
   # Ambient light is represeneted by a color value
@@ -21,20 +20,55 @@ COLOR = 1
 SPECULAR_EXP = 4
 
 #lighting functions
-def get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect ):
-    pass
+def get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect):
+
+    color = [0, 0, 0]
+    normalize(normal)
+    normalize(view)
+    normalize(light[0])
+
+    amb = calculate_ambient(ambient, areflect)
+    dif = calculate_diffuse(light, dreflect, normal)
+    spec = calculate_specular(light, sreflect, view, normal)
+
+    for num in range(3):
+        color[num] = amb[num] + dif[num] + spec[num]
+    return limit_color(color)
 
 def calculate_ambient(alight, areflect):
-    pass
+    color = [0, 0, 0]
+    for num in range(3):
+        color[num] = alight[num] * areflect[num]
+    return limit_color(color)
 
 def calculate_diffuse(light, dreflect, normal):
-    pass
+    color = [0, 0, 0]
+    for num in range(3):
+        color[num] = light[1][num] * dreflect[num] * dot_product(light[0], normal)
+    return limit_color(color)
 
 def calculate_specular(light, sreflect, view, normal):
-    pass
+    color = [0, 0, 0]
+    obj = [0, 0, 0]
+    temp = 2 * dot_product(light[0], normal)
+    for num in range(3):
+        obj[num] = normal[num] * temp - light[0][num]
+    temp2 = (dot_product(obj, view))
+    if temp2 < 0:
+        temp2 = 0
+    temp2 = pow(temp2, SPECULAR_EXP)
+    for num in range(3):
+        color[num] = light[1][num] * sreflect[num] * temp2
+    return limit_color(color)
 
 def limit_color(color):
-    pass
+    for num in range(3):
+        color[num] = int(color[num])
+        if color[num] < 0:
+            color[num] = 0
+        elif color[num] > 255:
+            color[num] = 255
+    return color
 
 #vector functions
 #normalize vetor, should modify the parameter
@@ -44,6 +78,7 @@ def normalize(vector):
                            vector[2] * vector[2])
     for i in range(3):
         vector[i] = vector[i] / magnitude
+    return vector
 
 #Return the dot porduct of a . b
 def dot_product(a, b):
